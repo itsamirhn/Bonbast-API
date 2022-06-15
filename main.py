@@ -2,10 +2,19 @@ import datetime
 import requests
 from fastapi import FastAPI, HTTPException
 from bs4 import BeautifulSoup
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 BONBAST_URL = "https://www.bonbast.com"
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 
 
 def crawl_soup(url: str) -> BeautifulSoup:
