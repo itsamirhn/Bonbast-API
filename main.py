@@ -42,14 +42,19 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
     soup = crawl_soup(BONBAST_URL + f"/historical/{currency}/" + date.strftime("%Y/%m"))
     table_soup = soup.find("table")
     table = [[td.text for td in tr.findAll("td")] for tr in table_soup.findAll("tr")[1:]]
-
-    return {
-        row[0]: {
-            "sell": int(row[1]),
-            "buy": int(row[2]),
-        }
-        for row in table
-    }
+    prices = {}
+    for row in table:
+        try:
+            exact_date = row[0]
+            sell, buy = int(row[1]), int(row[2])
+            if sell > 0 and buy > 0:
+                prices[exact_date] = {
+                    "sell": sell,
+                    "buy": buy
+                }
+        except ValueError:
+            pass
+    return prices
 
 
 @app.get("/archive/")
@@ -64,16 +69,19 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
     soup = crawl_soup(BONBAST_URL + "/archive" + date.strftime("/%Y/%m/%d"))
     table_soup = soup.find("table")
     table = [[td.text for td in tr.findAll("td")] for tr in table_soup.findAll("tr")[1:]]
-
-    data = {
-        row[0].lower(): {
-            "sell": int(row[2]),
-            "buy": int(row[3]),
-        }
-        for row in table
-    }
-    data.update({"date": date.strftime("%Y-%m-%d")})
-    return data
+    prices = {"date": date.strftime("%Y-%m-%d")}
+    for row in table:
+        try:
+            currency = row[0]
+            sell, buy = int(row[2]), int(row[3])
+            if sell > 0 and buy > 0:
+                prices[currency] = {
+                    "sell": sell,
+                    "buy": buy
+                }
+        except ValueError:
+            pass
+    return prices
 
 
 @app.on_event("startup")
