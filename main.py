@@ -72,7 +72,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
     prices = {"date": date.strftime("%Y-%m-%d")}
     for row in table:
         try:
-            currency = row[0]
+            currency = row[0].lower()
             sell, buy = int(row[2]), int(row[3])
             if sell > 0 and buy > 0:
                 prices[currency] = {
