@@ -1,8 +1,12 @@
 import datetime
+
 import requests
-from fastapi import FastAPI, HTTPException
 from bs4 import BeautifulSoup
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi_cache.decorator import cache
 
 app = FastAPI()
 
@@ -27,7 +31,8 @@ def crawl_soup(url: str) -> BeautifulSoup:
 
 
 @app.get("/historical/{currency}")
-def read_historical_currency(currency: str, date: str = datetime.date.today().strftime("%Y-%m")):
+@cache(expire=60 * 60 * 24)
+async def read_historical_currency(currency: str, date: str = datetime.date.today().strftime("%Y-%m")):
 
     try:
         date = datetime.datetime.strptime(date, "%Y-%m")
@@ -48,7 +53,8 @@ def read_historical_currency(currency: str, date: str = datetime.date.today().st
 
 
 @app.get("/archive/")
-def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")):
+@cache(expire=60 * 60 * 24)
+async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")):
 
     try:
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
@@ -69,3 +75,7 @@ def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)
     data.update({"date": date.strftime("%Y-%m-%d")})
     return data
 
+
+@app.on_event("startup")
+async def startup():
+    FastAPICache.init(InMemoryBackend())
