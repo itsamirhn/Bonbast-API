@@ -32,7 +32,7 @@ def read_historical_currency(currency: str, date: str = datetime.date.today().st
     try:
         date = datetime.datetime.strptime(date, "%Y-%m")
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
+        raise HTTPException(status_code=422, detail="Invalid Date format. Expected YYYY-MM")
 
     soup = crawl_soup(BONBAST_URL + f"/historical/{currency}/" + date.strftime("%Y/%m"))
     table_soup = soup.find("table")
