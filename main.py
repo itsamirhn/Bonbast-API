@@ -46,7 +46,7 @@ def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
-    soup = crawl_soup(BONBAST_URL + "/archive")
+    soup = crawl_soup(BONBAST_URL + "/archive" + date.strftime("/%Y/%m/%d"))
     table_soup = soup.find("table")
     table = [[td.text for td in tr.findAll("td")] for tr in table_soup.findAll("tr")[1:]]
 
