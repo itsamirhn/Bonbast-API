@@ -1,6 +1,7 @@
 import datetime
 
 import requests
+from bonbast.server import get_prices_from_api, get_token_from_main_page
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +34,6 @@ def crawl_soup(url: str) -> BeautifulSoup:
 @app.get("/historical/{currency}")
 @cache(expire=60 * 60 * 24)
 async def read_historical_currency(currency: str, date: str = datetime.date.today().strftime("%Y-%m")):
-
     try:
         date = datetime.datetime.strptime(date, "%Y-%m")
     except ValueError:
@@ -60,7 +60,6 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
 @app.get("/archive/")
 @cache(expire=60 * 60 * 24)
 async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")):
-
     try:
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
@@ -81,6 +80,15 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
                 }
         except ValueError:
             pass
+    return prices
+
+
+@app.get("/latest")
+@cache(expire=60 * 30)
+async def read_latest():
+    token = get_token_from_main_page()
+    currencies, _, _ = get_prices_from_api(token)
+    prices = {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
     return prices
 
 
