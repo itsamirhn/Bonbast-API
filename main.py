@@ -37,11 +37,14 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
     try:
         date = datetime.datetime.strptime(date, "%Y-%m")
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid Date format. Expected YYYY-MM")
+        raise HTTPException(
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM")
 
-    soup = crawl_soup(BONBAST_URL + f"/historical/{currency}/" + date.strftime("%Y/%m"))
+    soup = crawl_soup(
+        BONBAST_URL + f"/historical/{currency}/" + date.strftime("%Y/%m"))
     table_soup = soup.find("table")
-    table = [[td.text for td in tr.findAll("td")] for tr in table_soup.findAll("tr")[1:]]
+    table = [[td.text for td in tr.findAll("td")]
+             for tr in table_soup.findAll("tr")[1:]]
     prices = {}
     for row in table:
         try:
@@ -63,11 +66,13 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
     try:
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
+        raise HTTPException(
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
     soup = crawl_soup(BONBAST_URL + "/archive" + date.strftime("/%Y/%m/%d"))
     table_soup = soup.find("table")
-    table = [[td.text for td in tr.findAll("td")] for tr in table_soup.findAll("tr")[1:]]
+    table = [[td.text for td in tr.findAll("td")]
+             for tr in table_soup.findAll("tr")[1:]]
     prices = {"date": date.strftime("%Y-%m-%d")}
     for row in table:
         try:
@@ -88,7 +93,41 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
 async def read_latest():
     token = get_token_from_main_page()
     currencies, _, _ = get_prices_from_api(token)
-    prices = {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
+    prices = {c.code.lower(): {"sell": c.sell, "buy": c.buy}
+              for c in currencies}
+    return prices
+
+
+@app.get("/customrange/")
+@cache(expire=60 * 60 * 24)
+async def read_archive(startDate: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"), endDate: str = datetime.date.today().strftime("%Y-%m-%d")):
+    try:
+        startDate = datetime.datetime.strptime(startDate, "%Y-%m-%d")
+        endDate = datetime.datetime.strptime(endDate, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
+
+    prices = {}
+    duration = endDate - startDate
+
+    for i in range(duration.days + 1):
+        day = startDate + datetime.timedelta(days=i)
+        soup = crawl_soup(BONBAST_URL + "/archive" + day.strftime("/%Y/%m/%d"))
+        table_soup = soup.find("table")
+        table = [[td.text for td in tr.findAll("td")]
+                 for tr in table_soup.findAll("tr")[1:]]
+        date = {}
+        for row in table:
+            try:
+                currency = row[0].lower()
+                sell, buy = int(row[2]), int(row[3])
+                if sell > 0 and buy > 0:
+                    date[currency] = {"sell": sell, "buy": buy}
+            except ValueError:
+                pass
+        prices[day.strftime("%Y-%m-%d")] = date
+
     return prices
 
 
