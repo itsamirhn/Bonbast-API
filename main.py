@@ -70,11 +70,16 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
             status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
     soup = crawl_soup(BONBAST_URL + "/archive" + date.strftime("/%Y/%m/%d"))
-    table_soup = soup.find("table")
-    table = [[td.text for td in tr.findAll("td")]
-             for tr in table_soup.findAll("tr")[1:]]
+    table_soup = soup.find_all("table")
+    tables = []
+    for i in range(len(table_soup)-1):
+        for tr in table_soup[i].find_all("tr")[1:]:
+            table = []
+            for td in tr.find_all("td"):
+                table.append(td.text)
+            tables.append(table)
     prices = {"date": date.strftime("%Y-%m-%d")}
-    for row in table:
+    for row in tables:
         try:
             currency = row[0].lower()
             sell, buy = int(row[2]), int(row[3])
@@ -114,11 +119,16 @@ async def read_archive(startDate: str = (datetime.date.today() - datetime.timede
     for i in range(duration.days + 1):
         day = startDate + datetime.timedelta(days=i)
         soup = crawl_soup(BONBAST_URL + "/archive" + day.strftime("/%Y/%m/%d"))
-        table_soup = soup.find("table")
-        table = [[td.text for td in tr.findAll("td")]
-                 for tr in table_soup.findAll("tr")[1:]]
+        table_soup = soup.find_all("table")
+        tables = []
+        for i in range(len(table_soup)-1):
+            for tr in table_soup[i].find_all("tr")[1:]:
+                table = []
+                for td in tr.find_all("td"):
+                    table.append(td.text)
+                tables.append(table)
         date = {}
-        for row in table:
+        for row in tables:
             try:
                 currency = row[0].lower()
                 sell, buy = int(row[2]), int(row[3])
