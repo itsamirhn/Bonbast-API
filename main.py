@@ -110,7 +110,9 @@ async def read_latest():
 
 @app.get("/archive/range")
 @cache(expire=60 * 60 * 24)
-async def read_archive_range(start_date: str, end_date: str = datetime.date.today().strftime("%Y-%m-%d")):
+async def read_archive_range(
+        start_date: str,
+        end_date: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")):
     try:
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
@@ -124,8 +126,8 @@ async def read_archive_range(start_date: str, end_date: str = datetime.date.toda
     for i in range(duration.days + 1):
         day = start_date + datetime.timedelta(days=i)
         price = await read_archive(day.strftime("%Y-%m-%d"))
-        price.pop("date")
-        price_range[day.strftime("%Y-%m-%d")] = price
+        date = price.pop("date")
+        price_range[date] = price
     return price_range
 
 
