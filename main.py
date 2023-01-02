@@ -112,21 +112,21 @@ async def read_latest():
 @cache(expire=60 * 60 * 24)
 async def read_archive_range(start_date: str, end_date: str = datetime.date.today().strftime("%Y-%m-%d")):
     try:
-        startDate = datetime.datetime.strptime(startDate, "%Y-%m-%d")
-        endDate = datetime.datetime.strptime(endDate, "%Y-%m-%d")
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
     except ValueError:
         raise HTTPException(
             status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
-    priceRange = {}
-    duration = endDate - startDate
+    price_range = {}
+    duration = end_date - start_date
 
     for i in range(duration.days + 1):
-        day = startDate + datetime.timedelta(days=i)
+        day = start_date + datetime.timedelta(days=i)
         price = await read_archive(day.strftime("%Y-%m-%d"))
         price.pop("date")
-        priceRange[day.strftime("%Y-%m-%d")] = price
-    return priceRange
+        price_range[day.strftime("%Y-%m-%d")] = price
+    return price_range
 
 
 @app.on_event("startup")
