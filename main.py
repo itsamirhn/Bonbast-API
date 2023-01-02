@@ -31,10 +31,10 @@ def crawl_soup(url: str) -> BeautifulSoup:
     return soup
 
 
-def merge_and_extract_tables(table_soup):
+def merge_and_extract_tables(tables_soup):
     tables = []
-    for i in range(len(table_soup)):
-        for tr in table_soup[i].find_all("tr")[1:]:
+    for table_soup in tables_soup:
+        for tr in table_soup.find_all("tr")[1:]:
             table = []
             for td in tr.find_all("td"):
                 table.append(td.text)
