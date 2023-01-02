@@ -110,7 +110,7 @@ async def read_latest():
 
 @app.get("/archive/range")
 @cache(expire=60 * 60 * 24)
-async def customrange(startDate: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"), endDate: str = datetime.date.today().strftime("%Y-%m-%d")):
+async def read_archive_range(start_date: str, end_date: str = datetime.date.today().strftime("%Y-%m-%d")):
     try:
         startDate = datetime.datetime.strptime(startDate, "%Y-%m-%d")
         endDate = datetime.datetime.strptime(endDate, "%Y-%m-%d")
