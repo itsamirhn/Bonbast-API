@@ -11,6 +11,8 @@ from fastapi_cache.decorator import cache
 
 app = FastAPI()
 
+FastAPICache.init(InMemoryBackend())
+
 BONBAST_URL = "https://www.bonbast.com"
 
 app.add_middleware(
@@ -130,7 +132,3 @@ async def read_archive_range(
         price_range[date] = price
     return price_range
 
-
-@app.on_event("startup")
-async def startup():
-    FastAPICache.init(InMemoryBackend())
