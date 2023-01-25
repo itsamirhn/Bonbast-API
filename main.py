@@ -1,6 +1,6 @@
 import datetime
 
-import requests
+import httpx
 from bonbast.server import get_prices_from_api, get_token_from_main_page
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, HTTPException
@@ -24,15 +24,6 @@ app.add_middleware(
 )
 
 
-def crawl_soup(url: str) -> BeautifulSoup:
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to get {url}")
-    html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup
-
-
 def merge_and_extract_tables(tables_soup):
     tables = []
     for table_soup in tables_soup:
@@ -43,6 +34,14 @@ def merge_and_extract_tables(tables_soup):
             tables.append(table)
     return tables
 
+def crawl_soup(url: str, post_data: dict) -> BeautifulSoup:
+    response = httpx.post(url, data=post_data)
+    if response.status_code != 200:
+        raise Exception(f"Failed to crawl {url}")
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+    return soup
+
 
 @app.get("/historical/{currency}")
 @cache(expire=60 * 60 * 24)
@@ -52,9 +51,10 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
     except ValueError:
         raise HTTPException(
             status_code=422, detail="Invalid Date format. Expected YYYY-MM")
-
-    soup = crawl_soup(
-        BONBAST_URL + f"/historical/{currency}/" + date.strftime("%Y/%m"))
+    soup = crawl_soup(BONBAST_URL + f"/historical", {
+        "data": date.strftime("%Y-%m-%d"),
+        "currency": currency
+    })
     table_soup = soup.find("table")
     table = [[td.text for td in tr.findAll("td")]
              for tr in table_soup.findAll("tr")[1:]]
@@ -82,7 +82,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
         raise HTTPException(
             status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
-    soup = crawl_soup(BONBAST_URL + "/archive" + date.strftime("/%Y/%m/%d"))
+    soup = crawl_soup(BONBAST_URL + f"/archive", {"data": date.strftime("%Y-%m-%d")})
     table_soup = soup.find_all("table")
     table = merge_and_extract_tables(table_soup[:-1])
     prices = {"date": date.strftime("%Y-%m-%d")}
