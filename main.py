@@ -52,7 +52,7 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
         raise HTTPException(
             status_code=422, detail="Invalid Date format. Expected YYYY-MM")
     soup = crawl_soup(BONBAST_URL + f"/historical", {
-        "data": date.strftime("%Y-%m-%d"),
+        "date": date.strftime("%Y-%m-%d"),
         "currency": currency
     })
     table_soup = soup.find("table")
@@ -82,7 +82,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
         raise HTTPException(
             status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
 
-    soup = crawl_soup(BONBAST_URL + f"/archive", {"data": date.strftime("%Y-%m-%d")})
+    soup = crawl_soup(BONBAST_URL + f"/archive", {"date": date.strftime("%Y-%m-%d")})
     table_soup = soup.find_all("table")
     table = merge_and_extract_tables(table_soup[:-1])
     prices = {"date": date.strftime("%Y-%m-%d")}
