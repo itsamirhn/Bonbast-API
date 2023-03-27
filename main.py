@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 
 import httpx
@@ -28,9 +29,7 @@ def merge_and_extract_tables(tables_soup):
     tables = []
     for table_soup in tables_soup:
         for tr in table_soup.find_all("tr")[1:]:
-            table = []
-            for td in tr.find_all("td"):
-                table.append(td.text)
+            table = [td.text for td in tr.find_all("td")]
             tables.append(table)
     return tables
 
@@ -39,8 +38,7 @@ def crawl_soup(url: str, post_data: dict) -> BeautifulSoup:
     if response.status_code != 200:
         raise Exception(f"Failed to crawl {url}")
     html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup
+    return BeautifulSoup(html, 'html.parser')
 
 
 @app.get("/historical/{currency}")
@@ -48,19 +46,20 @@ def crawl_soup(url: str, post_data: dict) -> BeautifulSoup:
 async def read_historical_currency(currency: str, date: str = datetime.date.today().strftime("%Y-%m")):
     try:
         date = datetime.datetime.strptime(date, "%Y-%m")
-    except ValueError:
+    except ValueError as err:
         raise HTTPException(
-            status_code=422, detail="Invalid Date format. Expected YYYY-MM")
-    soup = crawl_soup(BONBAST_URL + f"/historical", {
-        "date": date.strftime("%Y-%m-%d"),
-        "currency": currency
-    })
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM"
+        ) from err
+    soup = crawl_soup(
+        f"{BONBAST_URL}/historical",
+        {"date": date.strftime("%Y-%m-%d"), "currency": currency},
+    )
     table_soup = soup.find("table")
     table = [[td.text for td in tr.findAll("td")]
              for tr in table_soup.findAll("tr")[1:]]
     prices = {}
     for row in table:
-        try:
+        with contextlib.suppress(ValueError):
             exact_date = row[0]
             sell, buy = int(row[1]), int(row[2])
             if sell > 0 and buy > 0:
@@ -68,8 +67,6 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
                     "sell": sell,
                     "buy": buy
                 }
-        except ValueError:
-            pass
     return prices
 
 
@@ -78,16 +75,19 @@ async def read_historical_currency(currency: str, date: str = datetime.date.toda
 async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")):
     try:
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
+    except ValueError as err:
         raise HTTPException(
-            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD"
+        ) from err
 
-    soup = crawl_soup(BONBAST_URL + f"/archive", {"date": date.strftime("%Y-%m-%d")})
+    soup = crawl_soup(
+        f"{BONBAST_URL}/archive", {"date": date.strftime("%Y-%m-%d")}
+    )
     table_soup = soup.find_all("table")
     table = merge_and_extract_tables(table_soup[:-1])
     prices = {"date": date.strftime("%Y-%m-%d")}
     for row in table:
-        try:
+        with contextlib.suppress(ValueError):
             currency = row[0].lower()
             sell, buy = int(row[2]), int(row[3])
             if sell > 0 and buy > 0:
@@ -95,8 +95,6 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
                     "sell": sell,
                     "buy": buy
                 }
-        except ValueError:
-            pass
     return prices
 
 
@@ -105,9 +103,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
 async def read_latest():
     token = get_token_from_main_page()
     currencies, _, _ = get_prices_from_api(token)
-    prices = {c.code.lower(): {"sell": c.sell, "buy": c.buy}
-              for c in currencies}
-    return prices
+    return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
 
 
 @app.get("/archive/range")
@@ -118,9 +114,10 @@ async def read_archive_range(
     try:
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-    except ValueError:
+    except ValueError as err:
         raise HTTPException(
-            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD")
+            status_code=422, detail="Invalid Date format. Expected YYYY-MM-DD"
+        ) from err
 
     price_range = {}
     duration = end_date - start_date
