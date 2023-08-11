@@ -102,8 +102,11 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
 @cache(expire=60 * 30)
 async def read_latest():
     token = get_token_from_main_page()
-    currencies, _, _ = get_prices_from_api(token)
-    return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
+    currencies, coins, ـ = get_prices_from_api(token)
+    prices = {}
+    prices["currencies"] = {u.code.lower(): {"sell": u.sell, "buy": u.buy} for u in currencies}
+    prices["coins"] = {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in coins}
+    return prices
 
 
 @app.get("/archive/range")
