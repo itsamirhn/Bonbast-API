@@ -106,6 +106,14 @@ async def read_latest():
     return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
 
 
+@app.get("/latest/coins")
+@cache(expire=60 * 30)
+async def read_latest():
+    token = get_token_from_main_page()
+    _, coins, _ = get_prices_from_api(token)
+    return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in coins}
+
+
 @app.get("/archive/range")
 @cache(expire=60 * 60 * 24)
 async def read_archive_range(
