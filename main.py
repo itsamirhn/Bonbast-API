@@ -107,11 +107,19 @@ async def read_latest():
 
 
 @app.get("/latest/coins")
-@cache(expire=60 * 30)
+@cache(expire=60 * 30) 
 async def read_latest():
     token = get_token_from_main_page()
     _, coins, _ = get_prices_from_api(token)
     return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in coins}
+
+
+@app.get("/latest/golds")
+@cache(expire=60 * 30)
+async def read_latest():
+    token = get_token_from_main_page()
+    _, _, golds = get_prices_from_api(token)
+    return {c.code.lower(): c.price for c in golds}
 
 
 @app.get("/archive/range")
