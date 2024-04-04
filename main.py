@@ -98,7 +98,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
     return prices
 
 
-@app.get("/latest")
+@app.get("/latest/currencies")
 @cache(expire=60 * 30)
 async def read_latest():
     token = get_token_from_main_page()
