@@ -100,7 +100,7 @@ async def read_archive(date: str = (datetime.date.today() - datetime.timedelta(d
 
 @app.get("/latest/currencies")
 @cache(expire=60 * 30)
-async def read_latest():
+async def read_latest_currencies():
     token = get_token_from_main_page()
     currencies, _, _ = get_prices_from_api(token)
     return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in currencies}
@@ -108,7 +108,7 @@ async def read_latest():
 
 @app.get("/latest/coins")
 @cache(expire=60 * 30) 
-async def read_latest():
+async def read_latest_coins():
     token = get_token_from_main_page()
     _, coins, _ = get_prices_from_api(token)
     return {c.code.lower(): {"sell": c.sell, "buy": c.buy} for c in coins}
@@ -116,7 +116,7 @@ async def read_latest():
 
 @app.get("/latest/golds")
 @cache(expire=60 * 30)
-async def read_latest():
+async def read_latest_golds():
     token = get_token_from_main_page()
     _, _, golds = get_prices_from_api(token)
     return {c.code.lower(): c.price for c in golds}
