@@ -1,0 +1,14 @@
+exclude: migrations
+repos:
+  - repo: https://github.com/pdm-project/pdm
+    rev: 2.15.3
+    hooks:
+      - id: pdm-lock-check
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: mixed-line-ending
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict

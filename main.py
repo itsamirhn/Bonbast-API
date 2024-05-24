@@ -132,4 +132,3 @@ async def read_archive_range(
         date = price.pop("date")
         price_range[date] = price
     return price_range
-
