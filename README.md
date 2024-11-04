@@ -1,15 +1,17 @@
 # Bonbast-API
+
 ![Build & Deploy](https://github.com/itsamirhn/bonbast-api/actions/workflows/main.yml/badge.svg)
 
 Free & Open Source Exchange Rate API for [Bonbast](https://bonbast.com).
 
-Be aware that this API use crawler to get data, and it might be slow or gets blocked.
-* No Token required.
-* No requests limit.
+Be aware that this API uses a web crawler to fetch data, so it might be slow or occasionally blocked.
 
-This code has deployed on my own serves, and it could be taken down at anytime. You can clone it on your domain using [this](https://deta.space/discovery/r/t6nwpvly5zhvjyki).
+- No Token required.
+- No requests limit.
 
-Currently it can be reached at https://bonbast.amirhn.com
+This code is deployed on my own servers and could be taken down at any time. You can also clone it to run on your own server.
+
+Currently it can be accessed at https://bonbast.amirhn.com
 
 See the documentation [here](https://bonbast.amirhn.com/docs).
 
