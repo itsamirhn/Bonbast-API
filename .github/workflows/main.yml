@@ -53,12 +53,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Deploy to server
-        uses: easingthemes/ssh-deploy@main
         with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USERNAME }}
-          SOURCE: docker-compose.yaml
-          SCRIPT_AFTER: |
-            TAG=${{ github.ref_name }} docker compose up -d
+          fetch-depth: 0
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: 'ssh://dokku@${{ vars.DOKKU_HOST }}:22/${{ vars.DOKKU_APP_NAME }}'
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          deploy_docker_image: 'ghcr.io/itsamirhn/bonbast-api:${{ github.ref_name }}'
