@@ -1,6 +1,0 @@
-services:
-  api:
-    image: ghcr.io/itsamirhn/bonbast-api:${TAG:-latest}
-    restart: unless-stopped
-    ports:
-      - "3000:3000"

@@ -1,7 +1,7 @@
 exclude: migrations
 repos:
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.15.3
+    rev: 2.20.1
     hooks:
       - id: pdm-lock-check
   - repo: https://github.com/pre-commit/pre-commit-hooks

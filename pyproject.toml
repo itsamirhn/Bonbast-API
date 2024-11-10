@@ -12,7 +12,7 @@ dependencies = [
     "uvicorn~=0.29.0",
     "beautifulsoup4~=4.12.3",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 
