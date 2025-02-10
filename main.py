@@ -14,7 +14,7 @@ app = FastAPI()
 
 FastAPICache.init(InMemoryBackend())
 
-BONBAST_URL = "https://www.bonbast.com"
+BONBAST_URL = "https://www.bon-bast.com"
 
 app.add_middleware(
     CORSMiddleware,
