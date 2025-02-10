@@ -2,7 +2,7 @@
 
 ![Build & Deploy](https://github.com/itsamirhn/bonbast-api/actions/workflows/main.yml/badge.svg)
 
-Free & Open Source Exchange Rate API for [Bonbast](https://bonbast.com).
+Free & Open Source Exchange Rate API for [Bonbast](https://www.bon-bast.com).
 
 Be aware that this API uses a web crawler to fetch data, so it might be slow or occasionally blocked.
 
